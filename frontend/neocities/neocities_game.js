@@ -13,11 +13,14 @@ const hazmat = document.getElementById('hazmat');
 const fire = document.getElementById('fire');
 const ready = document.getElementById('ready');
 const gameCanvas = document.getElementById('gameCanvas');
+const resourceList = document.getElementById('resourceList');
+const gameContainer = document.getElementById('game-container');
+const eventsContainer = document.getElementById('events-container');
 
 //Game canvas size
 const sizes = {
     width: 60*16, //60 tiles of 16px width each
-    height: 60*16 //60 tiles of 16px height each
+    height: 60*14 //60 tiles of 16px height each
   };
   
   //Locations
@@ -53,6 +56,9 @@ const sizes = {
 
   //Character selection
   let character = '';
+
+  // This player's resources
+  let resources = [];
   
   export default class NeocitiesGame extends Phaser.Scene {
       preload() {
@@ -75,11 +81,27 @@ const sizes = {
   
       create() {
           console.log("Creating the game...");
-          this.socket = io('http://localhost:3000');
+
+          this.socket = io('http://localhost:3000'); // Connect to the server
+          // Listen for the current players
           this.socket.on('currentPlayers', (data) => {
             console.log('currentPlayers', data);
             players[data.id] = data;
           })
+
+          // Listen for the player selected event
+          this.socket.on('resourcesAssigned', (data) => {
+            console.log('resourcesAssigned', data);
+            resourceList.style.display = 'block';
+            resourceList.appendChild(document.createElement('h2')).textContent = 'Resources'; 
+            resourceList.appendChild(document.createElement('hr'));
+            data.map(resource => {
+              const li = document.createElement('p');
+              li.textContent = resource.name;
+              resourceList.appendChild(li);
+            })
+          })
+
           // Create the tilemap
           const map = this.make.tilemap({ key: 'l1' })
           console.log("Tilemap created:", map);
@@ -156,8 +178,8 @@ const sizes = {
 
 
          //Game clock
-         this.gameClock = this.add.text(10,10, `Time: ${timer}`, { font: '20px Roboto', fill: '#000000' });
-         this.characterText = this.add.text(sizes.width-100,10, `${character}`, { font: '20px Roboto', fill: '#000000', backgroundColor: '#ffffff' });
+         this.gameClock = this.add.text(10,10, `Time: ${timer}`, { font: '20px Roboto', fill: '#000000', backgroundColor: '#ffffff', padding: 5});
+         this.characterText = this.add.text(sizes.width-100,10, `${character}`, { font: '20px Roboto', fill: '#000000', backgroundColor: '#ffffff', padding: 5});
 
          this.socket.on('timerUpdate', (time) => {
             this.gameClock.setText(`Time: ${time}`);
@@ -182,9 +204,11 @@ const sizes = {
             this.socket.emit('playerSelected', 'fire');
             ready.style.display = 'block';
           })
+          // Ready button
           ready.addEventListener('click', () => {
             this.socket.emit('playerReady');
             characterSelect.style.display = 'none';
+            gameContainer.style.display = 'flex';
             gameCanvas.style.display = 'block';
           })
       }

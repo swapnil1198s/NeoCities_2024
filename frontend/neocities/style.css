@@ -55,3 +55,28 @@ button:hover{
 #ready{
     display: none;
 }
+#resourceList{
+    display: none;
+    margin-right: 3em;
+    border: 1px solid whitesmoke;
+    padding: 1em;
+    border-radius: 10px;
+}
+#resourceList h2{
+    color: whitesmoke;
+    text-align: center;
+}
+#resourceList p{
+    font-size: 1.5em;
+    padding: 0.5em;
+}
+#game-container{
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+#resourceList p:hover{
+    cursor: pointer;
+    background-color: rosybrown;
+    color: black;
+}

@@ -40,7 +40,7 @@ let dispatched_resources = [] // list of objects { characterName: [List of rosou
 
 // Dictionary of resources for each character
 const characterResources = {
-    "Fire Responder": {resources: [
+    "fire": {resources: [
         {
           name: "Fire Truck",
           desc: "A vehicle equipped for firefighting operations, carrying water, fire hoses, and other equipment.",
@@ -67,7 +67,7 @@ const characterResources = {
         }
       ]
     },
-    "Police Responder":{resources: [
+    "police":{resources: [
       {
         name: "Police Officer",
         desc: "People",
@@ -97,7 +97,7 @@ const characterResources = {
         }
       ]
     },
-    "Hazmat Responder": {resources: [
+    "hazmat": {resources: [
       {
         name: "Hazmat Agent",
         desc: "People",
@@ -131,7 +131,7 @@ const characterResources = {
           speed: 0
         }
       ]},
-    "Paramedic":{resources: [
+    "medical":{resources: [
         {
           name: "Ambulance",
           desc: "A vehicle specially equipped for taking sick or injured people to and from the hospital, especially in emergencies.",
@@ -233,6 +233,7 @@ io.on('connection', (socket) => {
     socket.on('playerSelected', (data) => {
       console.log(`Player ${socket.id} selected ${data}`);
       players[socket.id].character = data;
+      socket.emit('resourcesAssigned', characterResources[data].resources);
       console.log(players)
     });
 
