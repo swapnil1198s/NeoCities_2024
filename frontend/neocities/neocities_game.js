@@ -185,7 +185,11 @@ const sizes = {
             this.gameClock.setText(`Time: ${time}`);
          });
 
-         // Character selection
+         // Scene transistions
+          startButton.addEventListener('click', () => {
+            gameStart.style.display = 'none';
+            characterSelect.style.display = 'block';
+          });
           police.addEventListener('click', () => {
             character = 'police';
             this.characterText.setText(character.toUpperCase());
@@ -267,9 +271,5 @@ const sizes = {
   
   const game = new Phaser.Game(config);
 
-// Scene transistions
-startButton.addEventListener('click', () => {
-    gameStart.style.display = 'none';
-    characterSelect.style.display = 'block';
-});
+
 
