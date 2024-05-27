@@ -205,17 +205,6 @@ function activateEvent(event){
     activated_events.push(event);
 }
 
-// Drop a event from the activated list
-function deactivateEvent(index){
-    activated_events.splice(index, 1); //Remove the event from activated list
-}
-
-function loadResources(character, resources, lobbyID){
-    console.log(character);
-    console.log(resources);
-    io.to(lobbyID).emit('assignResources', {character, resources});
-}
-
 io.on('connection', (socket) => {
     console.log(`New client connected ${socket.id}`); //Websocket handshake complete
     let joined = true; //If joined game // TODO: change back to false
@@ -233,8 +222,12 @@ io.on('connection', (socket) => {
     socket.on('playerSelected', (data) => {
       console.log(`Player ${socket.id} selected ${data}`);
       players[socket.id].character = data;
-      socket.emit('resourcesAssigned', characterResources[data].resources);
-      console.log(players)
+      socket.emit('resourcesAssigned', characterResources[data].resources); // Send the resources to the player
+      // Print the players updated
+      console.log("Players updated");
+      for(let player in players){
+        console.log(players[player].character + " | Ready: " + players[player].isReady);
+      }
     });
 
     socket.on('playerReady', () => {
@@ -242,7 +235,7 @@ io.on('connection', (socket) => {
         console.log(`${socket.id} is ready`);
 
         // Check if all players are ready
-        if(Object.values(players).every(p => p.isReady)){
+        if(Object.values(players).every(player => player.isReady)){
             console.log("All players are ready!");
             console.log("Starting Game...");
             io.emit('startGame');
@@ -252,35 +245,10 @@ io.on('connection', (socket) => {
         }
     });
     
-    // // Player indicates that they are ready to start the game
-    // socket.on('playerReady', (lobbyID) => {
-    //   const lobby = activeLobbies[lobbyID];
-    //   if (lobby) {
-    //     const player = lobby.players.find(p => p.socketId === socket.id);
-    //     player_chosen_charcters[player.socketId] = player.character;
-    //     console.log(`${player_chosen_charcters[player.socketId]} is ready`);
-  
-    //     var character = player_chosen_charcters[player.socketId];
-    //     var resources = characterResources[character]?.resources;
-    //     loadResources(character, resources, lobbyID);
-    //     if (player) {
-    //       player.isReady = true;
-    //       //loadResources(character, resources, lobbyID);
-    //       if (lobby.players.every(p => p.isReady)) {
-    //         console.log("All players are ready!");
-    //         console.log("Starting Game...");
-    //         io.to(lobbyID).emit('startGame', lobbyID);
-    //         setTimeout(()=>{
-    //           startGameTimer(lobbyID);
-    //         }, 500);
-    //       }
-    //     }
-    //   }
-    // });
-    
     // Player sends a message. Updates state of message board
     socket.on('chatMessage', ({message})=>{
-      const sender = player_chosen_charcters[socket.id];
+      console.log(`Received message ${message} from ${socket.id}`);
+      const sender = players[socket.id];
       io.emit('receiveMessage',{sender, message}); //Relay message to all players
     });
     

@@ -56,10 +56,21 @@ button:hover{
     display: none;
 }
 #resourceList{
-    display: none;
     margin-right: 3em;
     border: 1px solid whitesmoke;
     padding: 1em;
+    border-radius: 10px;
+    width: calc(15*16px);
+    height: 40vh;
+    overflow-y: scroll;
+    background-color: rgba(26, 26, 26, 0.579);
+}
+#resourceList::-webkit-scrollbar{
+    background-color: rgba(26, 26, 26, 0);
+    border-radius: 10px;
+}
+#resourceList::-webkit-scrollbar-thumb{
+    background-color: rgba(245, 245, 245, 0.363);
     border-radius: 10px;
 }
 #resourceList h2{
@@ -79,4 +90,21 @@ button:hover{
     cursor: pointer;
     background-color: rosybrown;
     color: black;
+}
+#chatMessages{
+    height: 30vh;
+    width: calc(40*16px);
+    overflow-y: scroll;
+    background-color: rgb(63, 143, 248);
+}
+#chatMessages p{
+    margin: 2px;
+    padding: 0.5em;
+    background-color: rgba(26, 26, 26, 0.579);
+}
+#chatInput{
+    width: calc(30*16px);
+}
+#sendChat{
+    width: calc(9*16px);
 }

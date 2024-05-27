@@ -13,18 +13,16 @@ const hazmat = document.getElementById('hazmat');
 const fire = document.getElementById('fire');
 const ready = document.getElementById('ready');
 const gameCanvas = document.getElementById('gameCanvas');
-const resourceList = document.getElementById('resourceList');
 const gameContainer = document.getElementById('game-container');
 const eventsContainer = document.getElementById('events-container');
 
 //Game canvas size
 const sizes = {
-    width: 60*16, //60 tiles of 16px width each
-    height: 60*14 //60 tiles of 16px height each
+    width: 100*16, //60 tiles of 16px width each
+    height: 60*16 //60 tiles of 16px height each
   };
   
   //Locations
-  let target = null;
   const locations = {
     university: {
       x: 100,
@@ -59,6 +57,10 @@ const sizes = {
 
   // This player's resources
   let resources = [];
+  let resourceList;
+
+  //Chat messages
+  let chatMessages = [];
   
   export default class NeocitiesGame extends Phaser.Scene {
       preload() {
@@ -77,6 +79,11 @@ const sizes = {
 
           // Load car sprite
           this.load.image('policeCar', 'assets/police_car.png');
+
+          // Load html
+          this.load.html('chatInput', 'assets/html/chat_input.html');
+          this.load.html('resourceList', 'assets/html/resource_list.html');
+          
       }
   
       create() {
@@ -89,16 +96,13 @@ const sizes = {
             players[data.id] = data;
           })
 
+          this.resourceList = this.add.dom(sizes.width - (18*16), 50).createFromCache('resourceList');
           // Listen for the player selected event
           this.socket.on('resourcesAssigned', (data) => {
             console.log('resourcesAssigned', data);
-            resourceList.style.display = 'block';
-            resourceList.appendChild(document.createElement('h2')).textContent = 'Resources'; 
-            resourceList.appendChild(document.createElement('hr'));
-            data.map(resource => {
-              const li = document.createElement('p');
-              li.textContent = resource.name;
-              resourceList.appendChild(li);
+            resources = data;
+            resources.forEach(resource => {
+              this.resourceList.getChildByID('resourceList').appendChild(document.createElement('p')).textContent = resource.name;
             })
           })
 
@@ -181,11 +185,29 @@ const sizes = {
          this.gameClock = this.add.text(10,10, `Time: ${timer}`, { font: '20px Roboto', fill: '#000000', backgroundColor: '#ffffff', padding: 5});
          this.characterText = this.add.text(sizes.width-100,10, `${character}`, { font: '20px Roboto', fill: '#000000', backgroundColor: '#ffffff', padding: 5});
 
+         // Chat box
+        this.chatInput = this.add.dom(sizes.width - (40*16), sizes.height- (16*21)).createFromCache('chatInput');
+        this.chatInput.addListener('click');
+        this.chatInput.on('click', (event) => {
+          if (event.target.name === 'sendChat') {
+            console.log('Send chat clicked');
+            const message = this.chatInput.getChildByName('chatInput').value;
+            this.chatInput.getChildByName('chatInput').value = '';
+            this.socket.emit('chatMessage', {message});
+          }
+        });
+        
+        this.socket.on('receiveMessage', ({sender, message}) => {
+          console.log('receiveMessage', sender, message);
+          chatMessages.push({sender, message});
+          this.chatInput.getChildByID('chatMessages').appendChild(document.createElement('p')).textContent = `${sender.character}: ${message}`;
+        })
+
          this.socket.on('timerUpdate', (time) => {
             this.gameClock.setText(`Time: ${time}`);
          });
 
-         // Scene transistions
+         // Button callbacks
           startButton.addEventListener('click', () => {
             gameStart.style.display = 'none';
             characterSelect.style.display = 'block';
@@ -234,24 +256,6 @@ const sizes = {
             }
 
       }
-
-      onSidewalk() {
-         console.log("On sidewalk");
-      }
-
-        // reachedBuilding(policeCar, building) {
-        //     console.log("Reached building");
-        //     if (building.texture.key === 'university') {
-        //         target = locations.university;
-        //     } else if (building.texture.key === 'policeStation') {
-        //         target = locations.policeStation;
-        //     } else if (building.texture.key === 'fireStation') {
-        //         target = locations.fireStation;
-        //     } else if (building.texture.key === 'hospital') {
-        //         target = locations.hospital;
-        //     }
-        //     //console.log("Target:", building);
-        // }
   }
   
   const config = {
@@ -265,6 +269,9 @@ const sizes = {
               gravity: { y: 0 },
               debug: true
           }
+      },
+      dom: {
+        createContainer: true
       },
       scene: [NeocitiesGame]
   };
